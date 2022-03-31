@@ -1,9 +1,19 @@
 from gtp_connection import GtpConnection
 from board_util import GoBoardUtil, EMPTY, BLACK, WHITE
 from simple_board import SimpleGoBoard
+from mcts import MCTS
+from feature_moves import FeatureMoves
+
 
 import numpy as np
 import random 
+
+def count_at_depth(node, depth, nodesAtDepth):
+    if not node._expanded:
+        return
+    nodesAtDepth[depth] += 1
+    for _, child in node._children.items():
+        count_at_depth(child, depth + 1, nodesAtDepth)
 
 def undo(board, move):
     board.board[move] = EMPTY
@@ -32,55 +42,98 @@ class NoGoFlatMC():
         self.version = 0.0
         self.simulations_per_move = 10
         self.best_move = None
+        self.MCTS = MCTS()
+        self.num_simulation = 300
+        self.limit = 100
+        self.exploration = 0.4
+        self.simulation_policy = 'random' #simrule must be random or rulebased or prob
+        self.use_pattern = True
+        self.in_tree_knowledge = "None"
+        self.parent = None
 
-    def simulate(self, board, toplay):
-        """
-        Run a simulated game for a given starting move.
-        """
-        res = game_result(board)
-        simulation_moves = []
-        while (res is None):
-            move = GoBoardUtil.generate_random_move(board, board.current_player)
-            play_move(board, move, board.current_player)
-            simulation_moves.append(move)
-            res = game_result(board)
-        for m in simulation_moves[::-1]:
-            undo(board, m)
-        result = 1.0 if res == toplay else 0.0
-        return result
+    def reset(self):
+        self.MCTS = MCTS()
 
-    def get_move(self, original_board, color):
-        """
-        The genmove function using one-ply MC search.
-        """
-        board = original_board.copy()
-        moves = GoBoardUtil.generate_legal_moves(board, board.current_player)
-        toplay = board.current_player
-        assert color == toplay
-        best_result, best_move = -1.0, None
-        best_move = moves[0]
-        self.best_move = moves[0]
-        wins = np.zeros(len(moves))
-        visits = np.zeros(len(moves))
-        for _ in range(self.simulations_per_move):
-            for i, move in enumerate(moves):
-                play_move(board, move, toplay)
-                res = game_result(board)
-                if res == toplay:
-                    # This move is a immediate win
-                    undo(board, move)
-                    return move 
-                sim_result = self.simulate(board, toplay)
-                wins[i] += sim_result
-                visits[i] += 1.0
-                win_rate = wins[i] / visits[i]
-                if win_rate > best_result:
-                    best_result = win_rate
-                    best_move = move 
-                    self.best_move = move 
-                undo(board, move)
-            assert best_move is not None 
-        return best_move
+    def update(self, move):
+        self.parent = self.MCTS._root
+        self.MCTS.update_with_move(move)
+
+    def get_move(self, board, toplay):
+        print('reached get move nogo')
+        move = self.MCTS.get_move(
+            board,
+            toplay,
+            limit=self.limit,
+            use_pattern=self.use_pattern,
+            num_simulation=self.num_simulation,
+            exploration=self.exploration,
+            simulation_policy=self.simulation_policy,
+            in_tree_knowledge=self.in_tree_knowledge,
+        )
+        print('end')
+       
+        self.update(move)
+        return move
+
+    def get_node_depth(self, root):
+        MAX_DEPTH = 100
+        nodesAtDepth = [0] * MAX_DEPTH
+        count_at_depth(root, 0, nodesAtDepth)
+        prev_nodes = 1
+        return nodesAtDepth
+
+    def get_properties(self):
+        return dict(version=self.version, name=self.__class__.__name__,)
+
+
+    # def simulate(self, board, toplay):
+    #     """
+    #     Run a simulated game for a given starting move.
+    #     """
+    #     res = game_result(board)
+    #     simulation_moves = []
+    #     while (res is None):
+    #         move = GoBoardUtil.generate_random_move(board, board.current_player)
+    #         play_move(board, move, board.current_player)
+    #         simulation_moves.append(move)
+    #         res = game_result(board)
+    #     for m in simulation_moves[::-1]:
+    #         undo(board, m)
+    #     result = 1.0 if res == toplay else 0.0
+    #     return result
+
+    # def get_move(self, original_board, color):
+    #     """
+    #     The genmove function using one-ply MC search.
+    #     """
+    #     board = original_board.copy()
+    #     moves = GoBoardUtil.generate_legal_moves(board, board.current_player)
+    #     toplay = board.current_player
+    #     assert color == toplay
+    #     best_result, best_move = -1.0, None
+    #     best_move = moves[0]
+    #     self.best_move = moves[0]
+    #     wins = np.zeros(len(moves))
+    #     visits = np.zeros(len(moves))
+    #     for _ in range(self.simulations_per_move):
+    #         for i, move in enumerate(moves):
+    #             play_move(board, move, toplay)
+    #             res = game_result(board)
+    #             if res == toplay:
+    #                 # This move is a immediate win
+    #                 undo(board, move)
+    #                 return move 
+    #             sim_result = self.simulate(board, toplay)
+    #             wins[i] += sim_result
+    #             visits[i] += 1.0
+    #             win_rate = wins[i] / visits[i]
+    #             if win_rate > best_result:
+    #                 best_result = win_rate
+    #                 best_move = move 
+    #                 self.best_move = move 
+    #             undo(board, move)
+    #         assert best_move is not None 
+    #     return best_move
 
 def run():
     """
