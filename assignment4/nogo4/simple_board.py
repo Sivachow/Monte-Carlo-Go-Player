@@ -215,11 +215,11 @@ class SimpleGoBoard(object):
         """
         assert is_black_white(color)
         # Special cases\
-        try:
-            if self.board[point] != EMPTY:
-                raise ValueError("occupied")
-        except:
-            print(point)
+        # try:
+        if self.board[point] != EMPTY:
+            raise ValueError("occupied")
+        # except:
+        #     print(point)
             
         # General case: deal with captures, suicide
         opp_color = GoBoardUtil.opponent(color)

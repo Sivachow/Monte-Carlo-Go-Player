@@ -273,17 +273,18 @@ class GtpConnection():
 
         move = None
        
-        signal.alarm(int(self.timelimit))
+        # try:
+        # signal.alarm(int(self.timelimit))
         self.sboard = self.board.copy()
         print('calling get move')
         move = self.go_engine.get_move(self.board, color)
         print('reached here')
         self.board=self.sboard
-        signal.alarm(0)
-        move=self.go_engine.best_move
-            
-
-        if move is None:
+        # signal.alarm(0)
+        # except:
+            # move=self.go_engine.best_move
+        print("hello")
+        if move == None:
             print('calls resign here')
             self.respond("resign")
             self.board.current_player = GoBoardUtil.opponent(self.board.current_player)

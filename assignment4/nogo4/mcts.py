@@ -56,8 +56,8 @@ class TreeNode(object):
                 if board.is_legal(move, color):
                     self._children[move] = TreeNode(self)
                     self._children[move]._move = move
-        self._children[PASS] = TreeNode(self)
-        self._children[PASS]._move = PASS
+        # self._children[PASS] = TreeNode(self)
+        # self._children[PASS]._move = PASS
         self._expanded = True
 
     def select(self, exploration, max_flag):
@@ -131,18 +131,20 @@ class MCTS(object):
         # This will be True olny once for the root
         if not node._expanded:
             node.expand(board, color)
+
         while not node.is_leaf():
             # Greedily select next move.
             max_flag = color == BLACK
             move, next_node = node.select(self.exploration, max_flag)
-            if move != PASS:
-                assert board.is_legal(move, color)
-            if move == PASS:
-                move = None
+            print(move)
+            # if move != PASS:
+            assert board.is_legal(move, color)
+            # if move == PASS:
+            #     move = None
             
-            if move == None:
-                continue
-
+            # if move == None:
+            #     continue
+            # print(move)
             board.play_move(move, color)
             color = GoBoardUtil.opponent(color)
             node = next_node
@@ -197,9 +199,11 @@ class MCTS(object):
         self.exploration = exploration
         self.simulation_policy = simulation_policy
         self.in_tree_knowledge = in_tree_knowledge
+
         for n in range(num_simulation):
             board_copy = board.copy()
             self._playout(board_copy, toplay)
+
         # choose a move that has the most visit
         moves_ls = [
             (move, node._n_visits) for move, node in self._root._children.items()
@@ -210,8 +214,8 @@ class MCTS(object):
         move = moves_ls[0]
         self.print_stat(board, self._root, toplay)
         # self.good_print(board,self._root,self.toplay,10)
-        if move[0] == PASS:
-            return None
+        # if move[0] == PASS:
+        #     return None
         assert board.is_legal(move[0], toplay)
         return move[0]
 
@@ -228,8 +232,8 @@ class MCTS(object):
         self.toplay = GoBoardUtil.opponent(self.toplay)
 
     def point_to_string(self, board_size, point):
-        if point == None or point == PASS:
-            return "Pass"
+        # if point == None or point == PASS:
+        #     return "Pass"
         x, y = point_to_coord(point, board_size)
         return format_point((x, y))
 
@@ -296,8 +300,8 @@ class MCTS(object):
             # Greedily select next move.
             max_flag = color == BLACK
             move, next_node = node.select(self.exploration, max_flag)
-            if move == PASS:
-                move = None
+            # if move == PASS:
+            #     move = None
             assert cboard.is_legal(move, color)
             pointString = self.point_to_string(cboard.size, move)
             cboard.play_move(move, color)
@@ -336,8 +340,8 @@ class MCTS(object):
                 win_rate = round(float(wins) / visits, 2)
             else:
                 win_rate = 0
-            if move == PASS:
-                move = None
+            # if move == PASS:
+            #     move = None
             pointString = self.point_to_string(board.size, move)
             stats.append((pointString, win_rate, wins, visits))
         sys.stderr.write(
