@@ -6,7 +6,7 @@ import os, sys
 import numpy as np
 #import random
 from board_util import GoBoardUtil, BLACK, WHITE, PASS
-from feature_moves import FeatureMoves
+from feature_moves import FeatureMoves, load_weights
 from gtp_connection import point_to_coord, format_point
 
 PASS = "pass"
@@ -112,6 +112,7 @@ class MCTS(object):
     def __init__(self):
         self._root = TreeNode(None)
         self.toplay = BLACK
+        self.weights = load_weights()
 
     def _playout(self, board, color):
         """
@@ -167,6 +168,7 @@ class MCTS(object):
             limit=self.limit,
             random_simulation=self.simulation_policy,
             use_pattern=self.use_pattern,
+            weights = self.weights
         )
         if winner == BLACK:
             return 1

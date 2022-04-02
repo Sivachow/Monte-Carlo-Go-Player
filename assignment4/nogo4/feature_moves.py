@@ -11,14 +11,18 @@ from feature import Feature
 from pattern_util import PatternUtil
 import numpy as np
 import random
+import os
 
 def load_weights():
     weights = {}
-    with open('weights.txt') as f:
+    dirpath = os.path.dirname(os.path.realpath(__file__))
+    filepath = os.path.join(dirpath, "weights.txt")
+    with open(filepath) as f:
         lines = f.readlines()
         for line in lines:
             weights[int(line.split()[0])] = float(line.split()[1])
     return weights
+
 
 def get_pattern(board, point, color):
     neighbors = sorted(board._neighbors(point)+board._diag_neighbors(point))
@@ -97,6 +101,7 @@ class FeatureMoves(object):
         limit = kwargs.pop("limit", 1000)
         simulation_policy = kwargs.pop("random_simulation", "random")
         simulation_policy = "prob"
+        weights_prob = kwargs.pop("weights")
         use_pattern = kwargs.pop("use_pattern", True)
         #check_selfatari = kwargs.pop("check_selfatari", True)
 
@@ -104,7 +109,7 @@ class FeatureMoves(object):
             raise TypeError("Unexpected **kwargs: %r" % kwargs) 
 
         if simulation_policy == "random":
-            while(True):  #Do we really want a limit?
+            while(True):  
                 color = board.current_player
                 move = GoBoardUtil.generate_random_move(board, color)
                 if(move == None):
@@ -113,7 +118,7 @@ class FeatureMoves(object):
 
            
         elif simulation_policy == "prob":
-            weights_prob = load_weights()
+            
             while(True):
                 color = board.current_player
                 legal_moves = GoBoardUtil.generate_legal_moves(board, color)
