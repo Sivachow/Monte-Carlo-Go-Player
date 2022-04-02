@@ -214,9 +214,12 @@ class SimpleGoBoard(object):
         Returns boolean: whether move was legal
         """
         assert is_black_white(color)
-        # Special cases
-        if self.board[point] != EMPTY:
-            raise ValueError("occupied")
+        # Special cases\
+        try:
+            if self.board[point] != EMPTY:
+                raise ValueError("occupied")
+        except:
+            print(point)
             
         # General case: deal with captures, suicide
         opp_color = GoBoardUtil.opponent(color)
