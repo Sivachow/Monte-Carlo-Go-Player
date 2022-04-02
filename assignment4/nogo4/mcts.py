@@ -53,7 +53,7 @@ class TreeNode(object):
         moves = board.get_empty_points()
         for move in moves:
             if move not in self._children:
-                if board.is_legal(move, color) and not board.is_eye(move, color):
+                if board.is_legal(move, color):
                     self._children[move] = TreeNode(self)
                     self._children[move]._move = move
         self._children[PASS] = TreeNode(self)
@@ -139,6 +139,10 @@ class MCTS(object):
                 assert board.is_legal(move, color)
             if move == PASS:
                 move = None
+            
+            if move == None:
+                continue
+
             board.play_move(move, color)
             color = GoBoardUtil.opponent(color)
             node = next_node
@@ -159,11 +163,9 @@ class MCTS(object):
         winner = FeatureMoves.playGame(
             board,
             toplay,
-            komi=self.komi,
             limit=self.limit,
             random_simulation=self.simulation_policy,
             use_pattern=self.use_pattern,
-            check_selfatari=self.check_selfatari,
         )
         if winner == BLACK:
             return 1
@@ -175,7 +177,6 @@ class MCTS(object):
         board,
         toplay,
         limit,
-        check_selfatari,
         use_pattern,
         num_simulation,
         exploration,
@@ -191,7 +192,6 @@ class MCTS(object):
             sys.stderr.flush()
             self._root = TreeNode(None)
         self.limit = limit
-        self.check_selfatari = check_selfatari
         self.use_pattern = use_pattern
         self.toplay = toplay
         self.exploration = exploration
