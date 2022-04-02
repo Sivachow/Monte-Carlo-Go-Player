@@ -10,6 +10,7 @@ The board uses a 1-dimensional representation with padding
 """
 
 import numpy as np
+#from nogo4.board_util import PASS
 from board_util import GoBoardUtil, BLACK, WHITE, EMPTY, BORDER, \
                        is_black_white, coord_to_point, where1d, \
                        MAXSIZE, NULLPOINT
@@ -215,11 +216,10 @@ class SimpleGoBoard(object):
         """
         assert is_black_white(color)
         # Special cases\
-        try:
-            if self.board[point] != EMPTY:
-                raise ValueError("occupied")
-        except:
-            print(point)
+        if self.board[point] != EMPTY:
+            raise ValueError("occupied")
+ 
+            #print(point)
             
         # General case: deal with captures, suicide
         opp_color = GoBoardUtil.opponent(color)

@@ -137,12 +137,6 @@ class MCTS(object):
             move, next_node = node.select(self.exploration, max_flag)
             if move != PASS:
                 assert board.is_legal(move, color)
-            if move == PASS:
-                move = None
-            
-            if move == None:
-                continue
-
             board.play_move(move, color)
             color = GoBoardUtil.opponent(color)
             node = next_node

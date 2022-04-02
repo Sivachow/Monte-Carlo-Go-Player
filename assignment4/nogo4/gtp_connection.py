@@ -270,9 +270,7 @@ class GtpConnection():
             self.respond("resign")
             self.board.current_player = GoBoardUtil.opponent(self.board.current_player)
             return 
-
         move = None
-       
         signal.alarm(int(self.timelimit))
         self.sboard = self.board.copy()
         print('calling get move')
