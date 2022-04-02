@@ -272,14 +272,14 @@ class GtpConnection():
 
         move = None
        
-        try:
-            signal.alarm(int(self.timelimit))
-            self.sboard = self.board.copy()
-            move = self.go_engine.get_move(self.board, color)
-            self.board=self.sboard
-            # signal.alarm(0)
-        except:
-            move=self.go_engine.best_move
+        #try:
+        signal.alarm(int(self.timelimit))
+        self.sboard = self.board.copy()
+        move = self.go_engine.get_move(self.board, color)
+        self.board=self.sboard
+        # signal.alarm(0)
+        #except:
+        #move=self.go_engine.best_move
         if move == None:
             self.respond("resign")
             self.board.current_player = GoBoardUtil.opponent(self.board.current_player)
