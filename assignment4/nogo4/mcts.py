@@ -136,7 +136,6 @@ class MCTS(object):
             # Greedily select next move.
             max_flag = color == BLACK
             move, next_node = node.select(self.exploration, max_flag)
-            print(move)
             # if move != PASS:
             assert board.is_legal(move, color)
             # if move == PASS:
@@ -188,8 +187,9 @@ class MCTS(object):
         """
         Runs all playouts sequentially and returns the most visited move.
         """
-        print('mcts get move')
         if self.toplay != toplay:
+            print(toplay)
+            print(self.toplay)
             sys.stderr.write("Dumping the subtree! \n")
             sys.stderr.flush()
             self._root = TreeNode(None)
@@ -212,7 +212,7 @@ class MCTS(object):
             return None
         moves_ls = sorted(moves_ls, key=lambda i: i[1], reverse=True)
         move = moves_ls[0]
-        self.print_stat(board, self._root, toplay)
+        #self.print_stat(board, self._root, toplay)
         # self.good_print(board,self._root,self.toplay,10)
         # if move[0] == PASS:
         #     return None

@@ -259,7 +259,6 @@ class GtpConnection():
         """
         Generate a move for the color args[0] in {'b', 'w'}, for the game of nogo.
         """
-        print('genmove cmd')
         board_color = args[0].lower()
         color = color_to_int(board_color)
         assert color == self.board.current_player
@@ -273,19 +272,15 @@ class GtpConnection():
 
         move = None
        
-        # try:
-        # signal.alarm(int(self.timelimit))
-        self.sboard = self.board.copy()
-        print('calling get move')
-        move = self.go_engine.get_move(self.board, color)
-        print('reached here')
-        self.board=self.sboard
-        # signal.alarm(0)
-        # except:
-            # move=self.go_engine.best_move
-        print("hello")
+        try:
+            signal.alarm(int(self.timelimit))
+            self.sboard = self.board.copy()
+            move = self.go_engine.get_move(self.board, color)
+            self.board=self.sboard
+            # signal.alarm(0)
+        except:
+            move=self.go_engine.best_move
         if move == None:
-            print('calls resign here')
             self.respond("resign")
             self.board.current_player = GoBoardUtil.opponent(self.board.current_player)
             return 

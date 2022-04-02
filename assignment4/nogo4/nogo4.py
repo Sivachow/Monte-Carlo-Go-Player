@@ -59,7 +59,6 @@ class NoGoFlatMC():
         self.MCTS.update_with_move(move)
 
     def get_move(self, board, toplay):
-        print('reached get move nogo')
         move = self.MCTS.get_move(
             board,
             toplay,
@@ -70,7 +69,6 @@ class NoGoFlatMC():
             simulation_policy=self.simulation_policy,
             in_tree_knowledge=self.in_tree_knowledge,
         )
-        print('end')
        
         self.update(move)
         return move

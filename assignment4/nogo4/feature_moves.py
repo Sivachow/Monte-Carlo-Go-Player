@@ -68,7 +68,6 @@ class FeatureMoves(object):
         while(True):  #Do we really want a limit?
             color = board.current_player
             if simulation_policy == "random": #Can fix divergence by implementing loops inside conditional
-                print('here')
                 move = GoBoardUtil.generate_random_move(board, color)
             # elif simulation_policy == "rulebased":
             #     move = PatternUtil.generate_move_with_filter(
@@ -81,7 +80,6 @@ class FeatureMoves(object):
             if(move == None):
                 break
 
-            print('hi')
             board.play_move(move, color)
 
            
