@@ -322,27 +322,43 @@ class GtpConnection:
     ==========================================================================
     """
     def genmove_cmd(self, args):
-        """ generate a move for color args[0] in {'b','w'} """
-        
+        """
+        Generate a move for the color args[0] in {'b', 'w'}, for the game of nogo.
+        """
         board_color = args[0].lower()
         color = color_to_int(board_color)
+        assert color == self.board.current_player
 
-        move = self.go_engine.get_move(self.board, color)
-    
-        # no move to play on the board
-        if move is None:
-            self.respond('resign')
-            return
+        # check if the game ends
+        legal_moves = GoBoardUtil.generate_legal_moves(self.board, self.board.current_player)
+        if not legal_moves:
+            self.respond("resign")
+            self.board.current_player = GoBoardUtil.opponent(self.board.current_player)
+            return 
+
+        move = None
+       
+        try:
+            signal.alarm(int(self.timelimit))
+            self.sboard = self.board.copy()
+            move = self.go_engine.get_move(self.board, color)
+            self.board=self.sboard
+            signal.alarm(0)
+        except:
+            move=self.go_engine.best_move
+            
+        if move == None:
+            self.respond("resign")
+            self.board.current_player = GoBoardUtil.opponent(self.board.current_player)
+            return 
 
         move_coord = point_to_coord(move, self.board.size)
         move_as_string = format_point(move_coord)
-
         if self.board.is_legal(move, color):
-            # play that move
             self.board.play_move(move, color)
             self.respond(move_as_string)
         else:
-            self.respond("Illegal move: {}".format(move_as_string))
+            self.respond("resign")
     
     def time_limit_cmd(self, args):
         '''
