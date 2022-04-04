@@ -15,7 +15,7 @@ def uct_val(node, move, child, exploration, max_flag,knowledge):
     if child._n_visits == 0:
         return float("inf")
     if max_flag:
-        return float(child._black_wins)/child._n_visits + knowledge[move] *exploration*np.sqrt(np.log(node._n_visits)/child._n_visits)
+        return float(child._black_wins)/child._n_visits + knowledge[move] + exploration*np.sqrt(np.log(node._n_visits)/child._n_visits)
     else:
         return float(child._n_visits - child._black_wins)/child._n_visits + exploration*np.sqrt(np.log(node._n_visits)/child._n_visits)
         

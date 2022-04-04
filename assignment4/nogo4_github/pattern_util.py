@@ -54,7 +54,7 @@ class PatternUtil(object):
         if kwargs:
             raise TypeError('Unexpected **kwargs: %r' % kwargs)
         nuPasses = 0
-        simulation_policy = 'prob'
+        # simulation_policy = 'prob'
         for _ in range(limit):
             color = board.current_player
             if simulation_policy == 'random':
