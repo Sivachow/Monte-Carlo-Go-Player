@@ -6,6 +6,7 @@ Utility functions for rule based simulations.
 import numpy as np
 #from pattern import pat3set
 import random
+from feature_moves import FeatureMoves
 
 from board_util import GoBoardUtil, EMPTY, PASS, BORDER
 
@@ -62,6 +63,8 @@ class PatternUtil(object):
             
             else:
                 assert simulation_policy == 'prob'
+                #move = FeatureMoves.generate_move(board)
+                
                 legal_moves = GoBoardUtil.generate_legal_moves(board, color)
                 if not legal_moves:
                     break

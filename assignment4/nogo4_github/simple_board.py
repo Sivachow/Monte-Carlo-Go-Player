@@ -104,6 +104,7 @@ class SimpleGoBoard(object):
         assert b.WE == self.WE
         b.ko_recapture = self.ko_recapture
         b.current_player = self.current_player
+        b.last_move = self.last_move
         assert b.maxpoint == self.maxpoint
         b.board = np.copy(self.board)
         return b
