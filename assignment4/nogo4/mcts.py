@@ -6,7 +6,8 @@ import os, sys
 import numpy as np
 #import random
 from board_util import GoBoardUtil, BLACK, WHITE, PASS
-from feature_moves import FeatureMoves, load_weights
+# from feature_moves import FeatureMoves, load_weights
+from pattern_util import PatternUtil
 from gtp_connection import point_to_coord, format_point
 
 PASS = "pass"
@@ -112,7 +113,7 @@ class MCTS(object):
     def __init__(self):
         self._root = TreeNode(None)
         self.toplay = BLACK
-        self.weights = load_weights()
+        # self.weights = load_weights()
 
     def _playout(self, board, color):
         """
@@ -196,8 +197,8 @@ class MCTS(object):
             sys.stderr.flush()
             self._root = TreeNode(None)
         self.limit = limit
-        self.use_pattern = use_pattern
         self.toplay = toplay
+        self.use_pattern = use_pattern
         self.exploration = exploration
         self.simulation_policy = simulation_policy
         self.in_tree_knowledge = in_tree_knowledge
@@ -218,7 +219,9 @@ class MCTS(object):
         # self.good_print(board,self._root,self.toplay,10)
         # if move[0] == PASS:
         #     return None
+        print(toplay, self.toplay)
         assert board.is_legal(move[0], toplay)
+        # self.update_with_move(move[0])
         return move[0]
 
     def update_with_move(self, last_move):

@@ -123,7 +123,7 @@ def playSingleGame(alternative=False):
     print(f'Winner: {winner} Timeout: {istimeout}\n')
     return result,istimeout
 
-def playGames(numGame=1):
+def playGames(numGame=10):
     '''
     play the specified number of games with alternating turns
     '''

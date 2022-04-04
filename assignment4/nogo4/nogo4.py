@@ -3,7 +3,7 @@ from gtp_connection import GtpConnection
 from board_util import GoBoardUtil, EMPTY, BLACK, WHITE
 from simple_board import SimpleGoBoard
 from mcts import MCTS
-from feature_moves import FeatureMoves
+from pattern_util import PatternUtil
 
 
 import numpy as np
