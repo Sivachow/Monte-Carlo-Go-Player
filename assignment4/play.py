@@ -151,7 +151,7 @@ def outputResult():
 def saveResult():
     f = open("game_results.txt", "w")
     f.write("player 1: {}\n".format(player1))
-    f.write("player 2: {}\n".format(player2))
+    f.write("player 2: {}\n".format(player2))               
     f.write("player 1 wins: {}\n".format(win1))
     f.write("player 2 wins: {}\n".format(win2))
     f.close()

@@ -42,7 +42,7 @@ class PatternUtil(object):
 
 
     @staticmethod
-    def playGame(board, color, **kwargs):
+    def playGame(board, color, weights_prob, **kwargs):
         """
         Run a simulation game according to give parameters.
         """
@@ -54,16 +54,22 @@ class PatternUtil(object):
         if kwargs:
             raise TypeError('Unexpected **kwargs: %r' % kwargs)
         nuPasses = 0
+        simulation_policy = 'prob'
         for _ in range(limit):
             color = board.current_player
             if simulation_policy == 'random':
                 move = GoBoardUtil.generate_random_move(board,color,True)
-            elif simulation_policy == 'rulebased':
-                move = PatternUtil.generate_move_with_filter(board,use_pattern,False)
+            
             else:
                 assert simulation_policy == 'prob'
-                move = PatternUtil.generate_move_with_feature_based_probs(board)
-        
+                legal_moves = GoBoardUtil.generate_legal_moves(board, color)
+                if not legal_moves:
+                    break
+                pattern_moves = get_pattern_probs(board, legal_moves, color,weights_prob)[0] #Get a dictionary of all the legal moves with their weights
+                moves = list(pattern_moves.keys())
+                weights = list(pattern_moves.values())
+                
+                move = random.choices(moves, weights = weights, k=1)[0] #Generate a random move from moves based on weights
             if move == PASS:
                 break
             board.play_move(move, color)

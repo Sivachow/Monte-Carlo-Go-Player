@@ -146,17 +146,18 @@ class MCTS(object):
             node.expand(board, color,weights)
         if board.current_player != color:
             color = board.current_player
-        leaf_value = self._evaluate_rollout(board, color)  
+        leaf_value = self._evaluate_rollout(board, color,weights)  
         # Update value and visit count of nodes in this traversal.
         node.update_recursive(leaf_value)
 
-    def _evaluate_rollout(self, board, toplay):
+    def _evaluate_rollout(self, board, toplay,weights):
         """
         Use the rollout policy to play until the end of the game, returning +1 if the current
         player wins, -1 if the opponent wins, and 0 if it is a tie.
         """
         winner = PatternUtil.playGame(board,
                 toplay,
+                weights,
                 komi=self.komi,
                 limit=self.limit,
                 random_simulation=self.simulation_policy,
