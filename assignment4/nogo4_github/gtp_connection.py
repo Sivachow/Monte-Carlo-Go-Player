@@ -247,6 +247,63 @@ class GtpConnection():
         except Exception as e:
             self.respond('illegal move: \"{} {}\" {}'.format(args[0], args[1], str(e)))
 
+    def check_pattern(self, legal_moves, color):
+        max_val = 0
+        best_move = None
+        for move in legal_moves:
+            self.board.board[move] = color
+            move_coord = list(point_to_coord(move, self.board.size))
+            move_coord[0] = move_coord[0]-1
+            move_coord[1] = move_coord[1]-1
+            curr_board = GoBoardUtil.get_twoD_board(self.board)
+            row = curr_board[move_coord[0]]
+            column = [x[move_coord[1]] for x in curr_board]
+            row_len = len(row)
+            # print(curr_board)
+            # print(move_coord)
+            # print(row)
+            # print(column)
+
+            #row
+            back = 0
+            front = 0
+            i = 1
+            while((move_coord[1]-i) >= 0):
+                if(row[move_coord[1]-i]!=color):
+                    break
+                back = back+1
+                i=i+1
+            i = 1
+            while((move_coord[1]+i) < row_len):
+                if(row[move_coord[1]+i]!=color):
+                    break
+                front = front+1
+                i=i+1
+            curr_val1 = back+front+1
+
+            #column
+            back = 0
+            front = 0
+            i = 1
+            while((move_coord[0]-i) >= 0):
+                if(column[move_coord[0]-i]!=color):
+                    break
+                back = back+1
+                i=i+1
+            i = 1
+            while((move_coord[0]+i) < self.board.size):
+                if(column[move_coord[0]+i]!=color):
+                    break
+                front = front+1
+                i=i+1
+            curr_val2 = back+front+1
+            curr_max = max(curr_val1, curr_val2) 
+            if(curr_max>max_val):
+                max_val = curr_max
+                best_move = move
+            self.board.board[move] = EMPTY
+        return(max_val, best_move)
+
     def genmove_cmd(self, args):
         """
         Generate a move for the color args[0] in {'b', 'w'}, for the game of gomoku.
@@ -261,8 +318,11 @@ class GtpConnection():
             self.board.current_player = GoBoardUtil.opponent(self.board.current_player)
             return
         
-        
-        move = self.go_engine.get_move(self.board, color)
+        max_val, best_move = self.check_pattern(legal_moves, color)
+        if(max_val > self.board.size/2):
+            move = best_move
+        else:
+            move = self.go_engine.get_move(self.board, color)
         move_coord = point_to_coord(move, self.board.size)
         move_as_string = format_point(move_coord)
         if self.board.is_legal(move, color):
