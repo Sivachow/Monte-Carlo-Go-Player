@@ -91,6 +91,7 @@ class SimpleGoBoard(object):
         self._initialize_empty_points(self.board)
         self._initialize_neighbors()
         self.moves = []
+        self.best_move = None
         self.last_move = None
     #self.pat3set = []
         #file = open("weights", "r")

@@ -40,7 +40,7 @@ class Nogo():
         self.version = 0.22
         self.komi = 6.5
         self.MCTS = MCTS()
-        self.num_simulation = 2000
+        self.num_simulation = 4000
         self.limit = limit
         self.exploration = exploration 
         self.simulation_policy = 'random'

@@ -15,7 +15,7 @@ def uct_val(node, move, child, exploration, max_flag,knowledge):
     if child._n_visits == 0:
         return float("inf")
     if max_flag:
-        return float(child._black_wins)/child._n_visits + knowledge[move] + exploration*np.sqrt(np.log(node._n_visits)/child._n_visits)
+        return float(child._black_wins)/child._n_visits + exploration*np.sqrt(np.log(node._n_visits)/child._n_visits)
     else:
         return float(child._n_visits - child._black_wins)/child._n_visits + exploration*np.sqrt(np.log(node._n_visits)/child._n_visits)
         
@@ -196,21 +196,24 @@ class MCTS(object):
         self.simulation_policy = simulation_policy
         self.in_tree_knowledge = in_tree_knowledge
 #print("number of simulations: " + str(num_simulation) + "\n")
-        for n in range(num_simulation):
+        for n in range(1, num_simulation+1):
             board_copy = board.copy()
             self._playout(board_copy, toplay,weights)
-        # choose a move that has the most visit 
-        moves_ls =  [(move, node._n_visits) for move, node in self._root._children.items()]
-        if not moves_ls:
-            return None
-        moves_ls = sorted(moves_ls,key=lambda i:i[1],reverse=True)
-        move = moves_ls[0]
-        #self.print_stat(board, self._root, toplay)
-        #self.good_print(board,self._root,self.toplay,10)
-        if move[0] == PASS:
-            return None
-        assert board.is_legal(move[0], toplay)
-        return move[0]
+            if((n % 500) == 0):
+                # choose a move that has the most visit 
+                moves_ls =  [(move, node._n_visits) for move, node in self._root._children.items()]
+                if not moves_ls:
+                    break
+                moves_ls = sorted(moves_ls,key=lambda i:i[1],reverse=True)
+                move = moves_ls[0]
+                #self.print_stat(board, self._root, toplay)
+                #self.good_print(board,self._root,self.toplay,10)
+                # if move[0] == PASS:
+                #     return None
+                assert board.is_legal(move[0], toplay)
+                board.best_move = move[0]
+
+        return board.best_move
         
     def update_with_move(self, last_move):
         """
