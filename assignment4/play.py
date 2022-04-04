@@ -3,8 +3,9 @@ import pexpect
 
 # path to the two players
 # player 1 plays first
-player1='random_player/nogo_random.py'
-player2='nogo4/nogo4.py' 
+#player1='random_player/nogo_random.py'
+player2='ucb_player/nogo_ucb.py'
+player1='nogo4/nogo4.py' 
 
 # stats for win/timeout
 # note that timeout is considered lost
@@ -20,6 +21,7 @@ def getMove(p,color):
     send genmove command to the players
     used to play a move
     '''
+    
     p.sendline('genmove '+color)
     p.expect([pexpect.TIMEOUT,'= [a-zA-Z][0-9]','= resign'])
     if p.after==pexpect.TIMEOUT:
@@ -37,7 +39,7 @@ def setupPlayer(p):
     '''
     configure the players
     '''
-    p.sendline('boardsize 7')
+    p.sendline('boardsize 5')
     p.sendline('clear_board')
     p.sendline('timelimit {}'.format(TIMEOUT))
 
@@ -123,7 +125,7 @@ def playSingleGame(alternative=False):
     print(f'Winner: {winner} Timeout: {istimeout}\n')
     return result,istimeout
 
-def playGames(numGame=1):
+def playGames(numGame=10):
     '''
     play the specified number of games with alternating turns
     '''

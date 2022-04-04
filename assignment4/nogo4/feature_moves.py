@@ -118,7 +118,6 @@ class FeatureMoves(object):
 
            
         elif simulation_policy == "prob":
-            
             while(True):
                 color = board.current_player
                 legal_moves = GoBoardUtil.generate_legal_moves(board, color)
