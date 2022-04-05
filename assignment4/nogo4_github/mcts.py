@@ -11,7 +11,7 @@ from gtp_connection import point_to_coord, format_point
 
 PASS = 'pass'
 
-def uct_val(node, move, child, exploration, max_flag,knowledge): 
+def uct_val(node, move, child, exploration, max_flag): 
     if child._n_visits == 0:
         return float("inf")
     if max_flag:
@@ -37,10 +37,10 @@ class TreeNode(object):
         self._black_wins = 0
         self._expanded = False
         self._move = None
-        self.legal_moves = []
-        self.knowledge = {}
+        # self.legal_moves = []
+        # self.knowledge = {}
 
-    def expand(self, board, color,weights_prob):
+    def expand(self, board, color):
         """
         Expands tree by creating new children.
         """
@@ -50,15 +50,15 @@ class TreeNode(object):
                 if board.is_legal(move, color): #and not board.is_eye(move, color):
                     self._children[move] = TreeNode(self)
                     self._children[move]._move = move
-                    self.legal_moves.append(move)
+                    # self.legal_moves.append(move)
     #self._children[PASS] = TreeNode(self)
     #self._children[PASS]._move = PASS
-        pattern_moves = get_pattern_probs(board, self.legal_moves, color,weights_prob)[0] #Get a dictionary of all the legal moves with their weights
-        moves = list(pattern_moves.keys())
-        weights = list(pattern_moves.values())
-        sum_w = sum(weights)
-        probs = [x/sum_w for x in weights]
-        self.knowledge = dict(zip(moves, probs))
+        # pattern_moves = get_pattern_probs(board, self.legal_moves, color,weights_prob)[0] #Get a dictionary of all the legal moves with their weights
+        # moves = list(pattern_moves.keys())
+        # weights = list(pattern_moves.values())
+        # sum_w = sum(weights)
+        # probs = [x/sum_w for x in weights]
+        # self.knowledge = dict(zip(moves, probs))
         
         self._expanded = True
 
@@ -71,7 +71,7 @@ class TreeNode(object):
         Returns:
         A tuple of (move, next_node)
         """
-        return max(self._children.items(), key=lambda items:uct_val(self, items[0], items[1], exploration, max_flag,self.knowledge))
+        return max(self._children.items(), key=lambda items:uct_val(self, items[0], items[1], exploration, max_flag))
         
     def update(self, leaf_value):
         """
@@ -129,7 +129,7 @@ class MCTS(object):
         node = self._root 
         # This will be True olny once for the root
         if not node._expanded:
-            node.expand(board, color,weights)
+            node.expand(board, color)
         while not node.is_leaf():
             # Greedily select next move.                
             max_flag = color == BLACK
@@ -143,7 +143,7 @@ class MCTS(object):
             node = next_node
         assert node.is_leaf()
         if not node._expanded:
-            node.expand(board, color,weights)
+            node.expand(board, color)
         if board.current_player != color:
             color = board.current_player
         leaf_value = self._evaluate_rollout(board, color,weights)  
