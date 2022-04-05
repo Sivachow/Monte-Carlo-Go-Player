@@ -1,4 +1,0 @@
-player 1: ucb_player/nogo_ucb.py
-player 2: ucb_player_c/nogo_ucb.py
-player 1 wins: 5
-player 2 wins: 5

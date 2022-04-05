@@ -7,7 +7,6 @@ from board_util import GoBoardUtil
 from board import GoBoard
 import numpy as np
 import os
-import random
 
 
 def load_weights():
@@ -52,7 +51,7 @@ def get_pattern_probs(board, moves, color, weights):
 
 
 ##################### Global Helper Method##############
-def play_game(board:GoBoard,weights_prob):
+def play_game(board:GoBoard):
     """
     Run a simulation game to the end fromt the current board
     """
@@ -98,7 +97,7 @@ class UCB:
 
         self.name = "UCB"
         self.version = 1.0
-        self.sim = 500
+        self.sim = 1000
         self.C = coefficient
         self.best_move = None
         self.weights = load_weights()
@@ -148,7 +147,7 @@ class UCB:
         """
         cboard = board.copy()
         cboard.play_move(move, toplay)
-        return play_game(cboard,self.weights)
+        return play_game(cboard)
     
     def run_ucb(self, board:GoBoard, moves, color):
         '''
