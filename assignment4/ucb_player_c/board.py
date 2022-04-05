@@ -10,6 +10,7 @@ The board uses a 1-dimensional representation with padding
 """
 
 import numpy as np
+import random
 from board_util import (
     GoBoardUtil,
     BLACK,
@@ -55,6 +56,16 @@ class GoBoard(object):
         self.maxpoint = size * size + 3 * (size + 1)
         self.board = np.full(self.maxpoint, BORDER, dtype=GO_POINT)
         self._initialize_empty_points(self.board)
+        self.initialize_code()
+        
+
+    def initialize_code(self):
+        self.code = []
+        for i in range(self.NS**2):
+            new_code = []
+            for j in range(3):
+                new_code.append(random.getrandbits(64))
+            self.code.append(new_code)
 
     def copy(self):
         b = GoBoard(self.size)

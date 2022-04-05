@@ -9,6 +9,7 @@ at the University of Edinburgh.
 import traceback
 import signal
 from sys import stdin, stdout, stderr
+from transposition_table import TranspositionTable
 from board_util import (
     GoBoardUtil,
     BLACK,
@@ -37,6 +38,9 @@ class GtpConnection:
         self.go_engine = go_engine
         self.board = board
         self.timelimit = 30
+        self.winner_move = EMPTY
+        self.hash_code = {}
+        self.current_player = self.board.current_player
         signal.signal(signal.SIGALRM, self.handler)
         self.commands = {
             "protocol_version": self.protocol_version_cmd,
@@ -324,15 +328,105 @@ class GtpConnection:
     Assignment 4 - game-specific commands you have to implement or modify
     ==========================================================================
     """
+    def winner(self, board, current_player):
+        #legal_moves = GoBoardUtil.generate_legal_moves(board, current_player)
+        if current_player == BLACK:
+            return WHITE
+        else:
+            return BLACK
+
+    def staticallyEvaluateForToPlay(self):
+        winColor = self.winner(self.board, self.current_player)
+        if winColor == self.current_player:
+            return True
+        assert winColor == GoBoardUtil.opponent(self.current_player)
+        return False
+
+    def storeResult(self,code, result):
+        self.tt.store(code, result)
+        return result
+
+    def negamaxBoolean(self, code):
+        result = self.tt.lookup(code)
+        if result != None:
+            return result
+        if(self.current_player == WHITE):
+            legal_moves = self.legal_moves_white
+        else:
+            legal_moves = self.legal_moves_black
+        
+        c = 0
+        for move in legal_moves: 
+            if(not self.board.is_legal(move, self.current_player)):
+                continue
+            c+=1
+            self.board.board[move] = self.current_player
+            self.current_player = GoBoardUtil.opponent(self.current_player)
+            success = not self.negamaxBoolean(code ^ self.board.code[self.hash_code[move]][EMPTY] ^ self.board.code[self.hash_code[move]][GoBoardUtil.opponent(self.current_player)])
+            self.board.board[move] = EMPTY
+            self.current_player = GoBoardUtil.opponent(self.current_player)
+            if success:
+                self.winner_move = move
+                return self.storeResult(code, True)
+        if(c == 0):
+            result = self.staticallyEvaluateForToPlay()
+            return self.storeResult(code, result)
+        return self.storeResult(code, False)
+
+    def get_board_code_2(self):
+        code_list = self.board.code
+        code = 0
+        c = 1
+        for i in range(len(self.board.board)):
+            if (self.board.board[i] == BORDER):
+                continue
+            code = code^code_list[c][self.board.board[i]]
+            self.hash_code[i] = c
+            c+=1
+        return code
+
+    def solve(self):
+        new_copy = self.board.copy()
+        # remove this respond and implement this method
+        self.tt = TranspositionTable() 
+        code = self.get_board_code_2()
+        if(self.current_player == BLACK):
+            self.legal_moves_black = GoBoardUtil.generate_legal_moves(self.board, self.current_player)
+            self.legal_moves_white = GoBoardUtil.generate_legal_moves(self.board,GoBoardUtil.opponent(self.current_player))
+        else:
+            self.legal_moves_white = GoBoardUtil.generate_legal_moves(self.board, self.current_player)
+            self.legal_moves_black = GoBoardUtil.generate_legal_moves(self.board,GoBoardUtil.opponent(self.current_player))
+        win = self.negamaxBoolean(code)
+        self.board = new_copy
+        if win:
+            if(self.current_player == 1):
+                winner = 'b'
+            else:
+                winner = 'w'
+            return self.winner_move
+        else:
+            return None
+
     def genmove_cmd(self, args):
         """ generate a move for color args[0] in {'b','w'} """
         
         board_color = args[0].lower()
         color = color_to_int(board_color)
-
+        assert color == self.board.current_player
+        # check if the game ends
+        legal_moves = GoBoardUtil.generate_legal_moves(self.board, self.board.current_player)
+        self.current_player = color
+        if not legal_moves:
+            self.respond("resign")
+            self.board.current_player = GoBoardUtil.opponent(self.board.current_player)
+            return
+        move = None
         try:
             signal.alarm(self.timelimit)
             self.sboard = self.board.copy()
+            # if(len(legal_moves)<13):
+            #     move = self.solve()
+            # else:
             move = self.go_engine.get_move(self.board, color)
             self.board=self.sboard
             signal.alarm(0)

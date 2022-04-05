@@ -43,7 +43,7 @@ class UCB:
 
         self.name = "UCB"
         self.version = 1.0
-        self.sim = 2000
+        self.sim = 1000
         self.C = coefficient
         self.best_move = None
     
