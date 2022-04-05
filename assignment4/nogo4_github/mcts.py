@@ -11,7 +11,7 @@ from gtp_connection import point_to_coord, format_point
 
 PASS = 'pass'
 
-def uct_val(node, move, child, exploration, max_flag): 
+def uct_val(node, child, exploration, max_flag): 
     if child._n_visits == 0:
         return float("inf")
     if max_flag:
@@ -71,7 +71,7 @@ class TreeNode(object):
         Returns:
         A tuple of (move, next_node)
         """
-        return max(self._children.items(), key=lambda items:uct_val(self, items[0], items[1], exploration, max_flag))
+        return max(self._children.items(), key=lambda items:uct_val(self, items[1], exploration, max_flag))
         
     def update(self, leaf_value):
         """
@@ -134,10 +134,7 @@ class MCTS(object):
             # Greedily select next move.                
             max_flag = color == BLACK
             move, next_node = node.select(self.exploration,max_flag)
-            if move!=PASS:
-                assert board.is_legal(move, color)
-            if move == PASS:
-                break
+            assert board.is_legal(move, color)
             board.play_move(move, color)
             color = GoBoardUtil.opponent(color) 
             node = next_node
@@ -158,8 +155,6 @@ class MCTS(object):
         winner = PatternUtil.playGame(board,
                 toplay,
                 weights,
-                komi=self.komi,
-                limit=self.limit,
                 random_simulation=self.simulation_policy,
                 use_pattern = self.use_pattern)
                                       #check_selfatari= self.check_selfatari)
