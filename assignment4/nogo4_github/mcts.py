@@ -157,7 +157,6 @@ class MCTS(object):
                 weights,
                 random_simulation=self.simulation_policy,
                 use_pattern = self.use_pattern)
-                                      #check_selfatari= self.check_selfatari)
         if winner == BLACK:
             return 1
         else:

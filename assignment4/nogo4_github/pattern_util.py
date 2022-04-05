@@ -51,7 +51,7 @@ class PatternUtil(object):
         #check_selfatari = kwargs.pop('check_selfatari',True)
         if kwargs:
             raise TypeError('Unexpected **kwargs: %r' % kwargs)
-        # simulation_policy = 'prob'
+        simulation_policy = 'prob'
         if simulation_policy == "random":
             while(True):  
                 color = board.current_player
