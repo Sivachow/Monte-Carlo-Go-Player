@@ -5,7 +5,7 @@ import pexpect
 # player 1 plays first
 # player1='random_player/nogo_random.py'
 player1='ucb_player/nogo_ucb.py'
-player2='nogo4_github/nogo4.py' 
+player2='ucb_player_c/nogo_ucb.py' 
 
 # stats for win/timeout
 # note that timeout is considered lost
