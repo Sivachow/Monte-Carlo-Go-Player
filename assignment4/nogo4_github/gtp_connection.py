@@ -11,6 +11,7 @@ from sys import stdin, stdout, stderr
 from board_util import GoBoardUtil, BLACK, WHITE, EMPTY, BORDER, PASS, \
                        MAXSIZE, coord_to_point
 from pattern_util import PatternUtil
+from transposition_table import TranspositionTable
 import numpy as np
 import re
 import signal
@@ -55,7 +56,10 @@ class GtpConnection():
         }
         self.timelimit = 30
         self.sboard = None
-
+        self.winner_move = EMPTY
+        self.hash_code = {}
+        self.current_player = self.board.current_player
+        self.flag = True
         # used for argument checking
         # values: (required number of arguments, 
         #          error message on argnum failure)
@@ -146,6 +150,7 @@ class GtpConnection():
         Reset the board to empty board of given size
         """
         self.board.reset(size)
+        self.flag = True
 
     def board2d(self):
         return str(GoBoardUtil.get_twoD_board(self.board))
@@ -247,6 +252,85 @@ class GtpConnection():
         except Exception as e:
             self.respond('illegal move: \"{} {}\" {}'.format(args[0], args[1], str(e)))
 
+    def winner(self, board, current_player):
+        #legal_moves = GoBoardUtil.generate_legal_moves(board, current_player)
+        if current_player == BLACK:
+            return WHITE
+        else:
+            return BLACK
+
+    def staticallyEvaluateForToPlay(self):
+        winColor = self.winner(self.board, self.current_player)
+        if winColor == self.current_player:
+            return True
+        assert winColor == GoBoardUtil.opponent(self.current_player)
+        return False
+
+    def storeResult(self,code, result):
+        self.tt.store(code, result)
+        return result
+
+    def negamaxBoolean(self, code):
+        result = self.tt.lookup(code)
+        if result != None:
+            return result
+        if(self.current_player == WHITE):
+            legal_moves = self.legal_moves_white
+        else:
+            legal_moves = self.legal_moves_black
+        
+        c = 0
+        for move in legal_moves: 
+            if(not self.board.is_legal(move, self.current_player)):
+                continue
+            c+=1
+            self.board.board[move] = self.current_player
+            self.current_player = GoBoardUtil.opponent(self.current_player)
+            success = not self.negamaxBoolean(code ^ self.board.code[self.hash_code[move]][EMPTY] ^ self.board.code[self.hash_code[move]][GoBoardUtil.opponent(self.current_player)])
+            self.board.board[move] = EMPTY
+            self.current_player = GoBoardUtil.opponent(self.current_player)
+            if success:
+                self.winner_move = move
+                return self.storeResult(code, True)
+        if(c == 0):
+            result = self.staticallyEvaluateForToPlay()
+            return self.storeResult(code, result)
+        return self.storeResult(code, False)
+
+    def get_board_code_2(self):
+        code_list = self.board.code
+        code = 0
+        c = 1
+        for i in range(len(self.board.board)):
+            if (self.board.board[i] == BORDER):
+                continue
+            code = code^code_list[c][self.board.board[i]]
+            self.hash_code[i] = c
+            c+=1
+        return code
+
+    def solve(self):
+        new_copy = self.board.copy()
+        # remove this respond and implement this method
+        self.tt = TranspositionTable() 
+        code = self.get_board_code_2()
+        if(self.current_player == BLACK):
+            self.legal_moves_black = GoBoardUtil.generate_legal_moves(self.board, self.current_player)
+            self.legal_moves_white = GoBoardUtil.generate_legal_moves(self.board,GoBoardUtil.opponent(self.current_player))
+        else:
+            self.legal_moves_white = GoBoardUtil.generate_legal_moves(self.board, self.current_player)
+            self.legal_moves_black = GoBoardUtil.generate_legal_moves(self.board,GoBoardUtil.opponent(self.current_player))
+        win = self.negamaxBoolean(code)
+        self.board = new_copy
+        if win:
+            if(self.current_player == 1):
+                winner = 'b'
+            else:
+                winner = 'w'
+            return self.winner_move
+        else:
+            return None
+
     def genmove_cmd(self, args):
         """
         Generate a move for the color args[0] in {'b', 'w'}, for the game of gomoku.
@@ -256,13 +340,22 @@ class GtpConnection():
         assert color == self.board.current_player
         # check if the game ends
         legal_moves = GoBoardUtil.generate_legal_moves(self.board, self.board.current_player)
+        self.current_player = color
         if not legal_moves:
             self.respond("resign")
             self.board.current_player = GoBoardUtil.opponent(self.board.current_player)
             return
         
-        
-        move = self.go_engine.get_move(self.board, color)
+        # if(len(legal_moves)<14 and self.flag):
+        #     move = self.solve()
+        #     if(move==None):
+        #         self.flag = False
+        # elif(len(legal_moves)>=14 or not self.flag):
+        #     move = self.go_engine.get_move(self.board, color)
+        if(len(legal_moves)<16):
+            move = self.solve()
+        else:
+            move = self.go_engine.get_move(self.board, color)
         move_coord = point_to_coord(move, self.board.size)
         move_as_string = format_point(move_coord)
         if self.board.is_legal(move, color):

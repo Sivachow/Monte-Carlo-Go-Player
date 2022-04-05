@@ -10,6 +10,7 @@ The board uses a 1-dimensional representation with padding
 """
 
 import numpy as np
+import random
 from board_util import GoBoardUtil, BLACK, WHITE, EMPTY, BORDER, \
                        PASS, is_black_white,is_black_white_empty, coord_to_point, where1d, \
                        MAXSIZE, NULLPOINT
@@ -98,6 +99,16 @@ class SimpleGoBoard(object):
         #for line in file:
         #    field = line.split(" ")
         #self.pat3set.append(field[1])
+        self.initialize_code()
+        
+
+    def initialize_code(self):
+        self.code = []
+        for i in range(self.NS**2):
+            new_code = []
+            for j in range(3):
+                new_code.append(random.getrandbits(64))
+            self.code.append(new_code)
 
     def copy(self):
         b = SimpleGoBoard(self.size)
